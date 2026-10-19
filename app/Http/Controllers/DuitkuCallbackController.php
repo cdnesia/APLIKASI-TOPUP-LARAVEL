@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApiLog;
 use App\Models\Order;
 use App\Services\Duitku\DuitkuClient;
 use App\Services\Duitku\DuitkuException;
@@ -17,7 +18,11 @@ class DuitkuCallbackController extends Controller
         // Duitku mengirim callback sebagai form-urlencoded
         $payload = $request->only(['merchantCode', 'amount', 'merchantOrderId', 'resultCode', 'reference', 'signature']);
 
+        $log = ['provider' => 'duitku', 'direction' => 'in', 'endpoint' => '/webhook/duitku', 'invoice' => $payload['merchantOrderId'] ?? null,
+            'request' => $request->all(), 'ip' => $request->ip()];
+
         if (! $duitku->verifyCallback($payload)) {
+            ApiLog::record($log + ['success' => false, 'http_status' => 403, 'message' => 'Callback ditolak: signature tidak valid']);
             Log::warning('Callback Duitku ditolak: signature tidak valid', ['ip' => $request->ip(), 'order' => $payload['merchantOrderId'] ?? null]);
 
             return response('Signature tidak valid', 403);
@@ -26,6 +31,8 @@ class DuitkuCallbackController extends Controller
         $order = Order::query()->where('invoice', $payload['merchantOrderId'])->first();
 
         if (! $order) {
+            ApiLog::record($log + ['success' => false, 'http_status' => 404, 'message' => 'Order tidak ditemukan']);
+
             return response('Order tidak ditemukan', 404);
         }
 
@@ -34,9 +41,16 @@ class DuitkuCallbackController extends Controller
         } catch (DuitkuException $e) {
             // Balas gagal agar Duitku mengirim ulang callback nanti
             Log::error('Callback Duitku gagal diverifikasi ulang', ['invoice' => $order->invoice, 'error' => $e->getMessage()]);
+            ApiLog::record($log + ['success' => false, 'http_status' => 500, 'message' => 'Gagal verifikasi ulang status: '.$e->getMessage()]);
 
             return response('Gagal verifikasi status', 500);
         }
+
+        ApiLog::record($log + [
+            'success' => true,
+            'http_status' => 200,
+            'message' => 'resultCode '.($payload['resultCode'] ?? '-')." → pembayaran {$order->refresh()->payment_status->label()}",
+        ]);
 
         return response('SUCCESS');
     }

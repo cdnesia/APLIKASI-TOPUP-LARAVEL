@@ -70,6 +70,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
         ->parameters(['flash-sale' => 'flashSale'])->names('flash-sales');
 
     Route::get('/laporan', Admin\ReportController::class)->name('reports');
+    Route::get('/log-api', [Admin\ApiLogController::class, 'index'])->name('api-logs.index');
 
     Route::get('/profil', [Admin\ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profil', [Admin\ProfileController::class, 'update'])->name('profile.update');

@@ -4,11 +4,13 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Models\ApiLog;
 use App\Models\Brand;
 use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
@@ -127,6 +129,29 @@ class DuitkuPaymentTest extends TestCase
         $this->assertSame(0, Order::query()->count());
         Http::assertNothingSent();
         $this->get(route('brands.show', $this->brand))->assertSee('data-min="10000"', false);
+    }
+
+    public function test_api_calls_are_logged_with_secrets_masked_and_visible_to_admin(): void
+    {
+        Http::fake(['*/v2/inquiry' => Http::response(['Message' => 'Payment channel not available'], 400)]);
+        $this->placeOrder();
+        $order = Order::query()->firstOrFail();
+
+        $log = ApiLog::query()->where('provider', 'duitku')->where('invoice', $order->invoice)->firstOrFail();
+        $this->assertFalse($log->success);
+        $this->assertSame(400, $log->http_status);
+        $this->assertSame('Payment channel not available', $log->message);
+        $this->assertSame('***', $log->request['signature']);
+        $this->assertSame('SP', $log->request['paymentMethod']);
+
+        // Callback palsu juga tercatat
+        $this->post(route('webhook.duitku'), ['merchantCode' => 'DS1234', 'merchantOrderId' => $order->invoice, 'signature' => 'palsu']);
+        $this->assertTrue(ApiLog::query()->where('direction', 'in')->where('success', false)->exists());
+
+        $admin = User::factory()->create();
+        $this->actingAs($admin)->get(route('admin.api-logs.index', ['result' => 'failed']))
+            ->assertOk()->assertSee('Payment channel not available')->assertSee('signature tidak valid')->assertDontSee('duitku-key');
+        $this->get(route('admin.orders.show', $order))->assertOk()->assertSee('Log API Pesanan Ini')->assertSee('Payment channel not available');
     }
 
     public function test_valid_callback_marks_paid_and_sends_to_digiflazz(): void

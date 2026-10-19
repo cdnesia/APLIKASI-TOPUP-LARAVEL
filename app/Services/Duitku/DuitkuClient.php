@@ -2,6 +2,7 @@
 
 namespace App\Services\Duitku;
 
+use App\Models\ApiLog;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
@@ -104,25 +105,45 @@ class DuitkuClient
     protected function post(string $path, array $payload): array
     {
         if (! $this->isConfigured()) {
+            ApiLog::record(['provider' => 'duitku', 'direction' => 'out', 'endpoint' => $path, 'success' => false, 'message' => 'Kredensial Duitku belum diatur di file .env.']);
+
             throw new DuitkuException('Kredensial Duitku belum diatur di file .env.');
         }
+
+        $log = ['provider' => 'duitku', 'direction' => 'out', 'endpoint' => $path, 'request' => $payload, 'invoice' => $payload['merchantOrderId'] ?? null];
+        $start = microtime(true);
 
         try {
             $response = Http::acceptJson()->asJson()->timeout(30)->post($this->baseUrl().$path, $payload);
         } catch (ConnectionException $e) {
+            ApiLog::record($log + ['success' => false, 'message' => 'Koneksi gagal: '.$e->getMessage(), 'duration_ms' => (int) round((microtime(true) - $start) * 1000)]);
+
             throw new DuitkuException('Tidak dapat terhubung ke Duitku: '.$e->getMessage(), previous: $e);
         }
 
         $data = $response->json();
+        $log += ['http_status' => $response->status(), 'duration_ms' => (int) round((microtime(true) - $start) * 1000), 'response' => $data ?? $response->body()];
 
         if (! is_array($data)) {
+            ApiLog::record($log + ['success' => false, 'message' => 'Respons tidak valid']);
+
             throw new DuitkuException("Respons Duitku tidak valid (HTTP {$response->status()}).");
         }
 
         // Error validasi Duitku dikirim dengan HTTP 4xx dan field "Message"
         if ($response->failed()) {
-            throw new DuitkuException($data['Message'] ?? $data['statusMessage'] ?? "Duitku menolak permintaan (HTTP {$response->status()}).");
+            $message = $data['Message'] ?? $data['statusMessage'] ?? "Duitku menolak permintaan (HTTP {$response->status()}).";
+            ApiLog::record($log + ['success' => false, 'message' => $message]);
+
+            throw new DuitkuException($message);
         }
+
+        // statusCode: 00 = sukses/lunas, 01 = menunggu pembayaran (wajar saat cek status)
+        $code = $data['statusCode'] ?? null;
+        ApiLog::record($log + [
+            'success' => $code === '00' || ($code === '01' && $path === '/transactionStatus'),
+            'message' => trim(($code ? "[{$code}] " : '').($data['statusMessage'] ?? '')),
+        ]);
 
         return $data;
     }

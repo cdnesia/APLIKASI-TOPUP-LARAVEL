@@ -2,6 +2,7 @@
 
 namespace App\Services\Digiflazz;
 
+use App\Models\ApiLog;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Http;
 
@@ -111,24 +112,49 @@ class DigiflazzClient
     protected function post(string $path, array $payload): array
     {
         if (! $this->isConfigured()) {
+            ApiLog::record(['provider' => 'digiflazz', 'direction' => 'out', 'endpoint' => $path, 'success' => false, 'message' => 'Kredensial Digiflazz belum diatur di file .env.']);
+
             throw new DigiflazzException('Kredensial Digiflazz belum diatur di file .env.');
         }
+
+        $payload = ['username' => $this->username] + $payload;
+        // ref_id percobaan ulang berbentuk INVOICE-2, simpan nomor invoicenya saja
+        $log = ['provider' => 'digiflazz', 'direction' => 'out', 'endpoint' => $path, 'request' => $payload,
+            'invoice' => isset($payload['ref_id']) ? explode('-', $payload['ref_id'])[0] : null];
+        $start = microtime(true);
 
         try {
             $response = Http::acceptJson()
                 ->asJson()
                 ->timeout(60)
-                ->post($this->baseUrl.$path, ['username' => $this->username] + $payload);
+                ->post($this->baseUrl.$path, $payload);
         } catch (ConnectionException $e) {
+            ApiLog::record($log + ['success' => false, 'message' => 'Koneksi gagal: '.$e->getMessage(), 'duration_ms' => $this->elapsed($start)]);
+
             throw new DigiflazzException('Tidak dapat terhubung ke Digiflazz: '.$e->getMessage(), previous: $e);
         }
 
         $data = $response->json('data');
+        $log += ['http_status' => $response->status(), 'duration_ms' => $this->elapsed($start), 'response' => $response->json() ?? $response->body()];
 
         if (! is_array($data)) {
+            ApiLog::record($log + ['success' => false, 'message' => 'Respons tidak valid']);
+
             throw new DigiflazzException("Respons Digiflazz tidak valid (HTTP {$response->status()}).");
         }
 
+        // rc 00 = sukses, 03 = pending; rc lain = gagal. Price list (array produk) tidak punya rc
+        $rc = array_is_list($data) ? null : ($data['rc'] ?? null);
+        ApiLog::record($log + [
+            'success' => $response->successful() && in_array($rc, [null, '00', '03'], true),
+            'message' => array_is_list($data) ? count($data).' produk' : trim(($data['status'] ?? '').' '.($data['message'] ?? '')),
+        ]);
+
         return $data;
+    }
+
+    protected function elapsed(float $start): int
+    {
+        return (int) round((microtime(true) - $start) * 1000);
     }
 }

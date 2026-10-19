@@ -53,6 +53,14 @@
                 @endif
             </section>
 
+            <section class="card overflow-hidden">
+                <div class="flex items-center justify-between gap-3 border-b border-border px-5 py-4">
+                    <h3>Log API Pesanan Ini</h3>
+                    <a href="{{ route('admin.api-logs.index', ['q' => $order->invoice]) }}" class="text-xs font-semibold text-primary hover:underline">Buka di Log API →</a>
+                </div>
+                @include('admin.api-logs.list', ['logs' => $apiLogs, 'hideInvoice' => true])
+            </section>
+
             <section class="card p-5">
                 <h3 class="mb-3">Bukti Pembayaran</h3>
                 @if ($order->payment_proof)

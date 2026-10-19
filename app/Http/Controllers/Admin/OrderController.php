@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
 use App\Http\Controllers\Controller;
+use App\Models\ApiLog;
 use App\Models\Order;
 use App\Services\Digiflazz\DigiflazzException;
 use App\Services\OrderService;
@@ -40,7 +41,10 @@ class OrderController extends Controller
 
     public function show(Order $order): View
     {
-        return view('admin.orders.show', ['order' => $order]);
+        return view('admin.orders.show', [
+            'order' => $order,
+            'apiLogs' => ApiLog::query()->where('invoice', $order->invoice)->latest('id')->limit(50)->get(),
+        ]);
     }
 
     public function proof(Order $order): StreamedResponse

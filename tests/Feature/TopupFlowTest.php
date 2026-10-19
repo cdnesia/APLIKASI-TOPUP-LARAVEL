@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Models\ApiLog;
 use App\Models\Banner;
 use App\Models\Brand;
 use App\Models\FlashSale;
@@ -77,6 +78,12 @@ class TopupFlowTest extends TestCase
         $this->assertFalse(Product::query()->where('sku', 'S10')->first()->provider_active);
 
         Http::assertSent(fn ($request) => $request['sign'] === md5('tester'.'secret-key'.'pricelist'));
+
+        // Price list besar diringkas di log, sign disamarkan
+        $log = ApiLog::query()->where('endpoint', '/price-list')->firstOrFail();
+        $this->assertTrue($log->success);
+        $this->assertSame('2 produk', $log->message);
+        $this->assertSame('***', $log->request['sign']);
     }
 
     public function test_customer_can_order_and_admin_confirmation_sends_to_digiflazz(): void

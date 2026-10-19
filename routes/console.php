@@ -2,6 +2,7 @@
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Models\ApiLog;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Digiflazz\DigiflazzException;
@@ -91,4 +92,5 @@ Artisan::command('orders:check-payments', function (OrderService $orders) {
 Schedule::command('digiflazz:sync')->hourly()->withoutOverlapping();
 Schedule::command('orders:check-payments')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('orders:expire')->everyFiveMinutes();
+Schedule::command('model:prune', ['--model' => [ApiLog::class]])->daily();
 Schedule::command('orders:check-pending')->everyTenMinutes()->withoutOverlapping();

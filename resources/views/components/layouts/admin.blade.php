@@ -7,6 +7,8 @@
     $confirmFilter = request()->routeIs('admin.orders.index') && request('payment_status') === PaymentStatus::WaitingConfirmation->value;
 
     // [label, url, ikon, aktif?, badge]
+    // Badge merah kecil di menu Log API bila ada panggilan gagal hari ini
+    $failedApiToday = \App\Models\ApiLog::query()->where('success', false)->where('created_at', '>=', today())->count();
     $menu = [
         'Utama' => [
             ['Dashboard', route('admin.dashboard'), 'squares', request()->routeIs('admin.dashboard'), null],
@@ -29,6 +31,7 @@
         ],
         'Sistem' => [
             ['Pengaturan', route('admin.settings.edit'), 'cog', request()->routeIs('admin.settings.*'), null],
+            ['Log API', route('admin.api-logs.index'), 'document', request()->routeIs('admin.api-logs.*'), $failedApiToday ?: null],
             ['Profil Saya', route('admin.profile.edit'), 'user', request()->routeIs('admin.profile.*'), null],
         ],
     ];
