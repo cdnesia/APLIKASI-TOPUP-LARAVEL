@@ -1,16 +1,17 @@
-{{-- Toast: pojok kanan bawah, hilang otomatis setelah 3 detik --}}
-<div id="toast-container" class="fixed right-4 bottom-20 z-50 md:bottom-5 flex flex-col gap-2 sm:right-5" aria-live="polite"></div>
+{{-- Toast: HP di tengah bawah (di atas navigasi bawah), desktop di pojok kanan bawah; hilang otomatis setelah 3 detik --}}
+<div id="toast-container" class="pointer-events-none fixed inset-x-4 bottom-20 z-50 flex flex-col items-center gap-2 md:inset-x-auto md:right-5 md:bottom-5 md:items-end" aria-live="polite"></div>
 
 <script>
     function showToast(message, type = 'success') {
         const colors = { success: 'bg-green-600', error: 'bg-red-600', warning: 'bg-yellow-500', info: 'bg-blue-600' };
+        const hidden = 'opacity-0 translate-y-3 md:translate-y-0 md:translate-x-full';
         const toast = document.createElement('div');
-        toast.className = `${colors[type] ?? colors.info} text-white text-sm font-medium px-4 py-3 rounded-lg shadow-lg flex items-center gap-2 min-w-[260px] max-w-sm transition-all duration-300 translate-x-full opacity-0`;
+        toast.className = `${colors[type] ?? colors.info} text-white text-sm font-medium px-4 py-3 rounded-lg shadow-lg flex items-center justify-center gap-2 text-center w-full max-w-sm md:w-auto md:justify-start md:text-left md:min-w-[260px] pointer-events-auto transition-all duration-300 ${hidden}`;
         toast.textContent = message;
         document.getElementById('toast-container').appendChild(toast);
-        requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+        requestAnimationFrame(() => toast.classList.remove(...hidden.split(' ')));
         setTimeout(() => {
-            toast.classList.add('translate-x-full', 'opacity-0');
+            toast.classList.add(...hidden.split(' '));
             setTimeout(() => toast.remove(), 300);
         }, 3000);
     }
