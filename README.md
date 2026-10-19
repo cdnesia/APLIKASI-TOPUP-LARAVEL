@@ -24,6 +24,14 @@ php artisan storage:link
 
 Buka `https://topup-cdnesia.test`, panel admin di `/admin` (akun dari `ADMIN_EMAIL` / `ADMIN_PASSWORD` di `.env`, bawaan `admin@elhazmi.com` / `password` — **segera ganti**).
 
+### Akun admin di server produksi
+
+```bash
+php artisan migrate --force --seed   # pertama kali: membuat tabel + akun admin dari .env
+php artisan admin:user               # buat akun admin / reset password (interaktif)
+php artisan admin:user admin@elhazmi.com --password='PasswordKuat123'
+```
+
 ## Konfigurasi Digiflazz (`.env`)
 
 | Variabel | Keterangan |

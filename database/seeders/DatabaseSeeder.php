@@ -16,9 +16,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        // Hanya membuat bila belum ada; untuk reset password gunakan `php artisan admin:user`
         User::query()->firstOrCreate(
-            ['email' => env('ADMIN_EMAIL', 'admin@elhazmi.com')],
-            ['name' => env('ADMIN_NAME', 'Administrator'), 'password' => env('ADMIN_PASSWORD', 'password')],
+            ['email' => config('app.admin.email')],
+            ['name' => config('app.admin.name'), 'password' => config('app.admin.password')],
         );
 
         foreach (Setting::DEFAULTS as $key => $value) {

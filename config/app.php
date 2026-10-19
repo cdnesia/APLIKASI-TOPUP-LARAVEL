@@ -123,4 +123,20 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Akun Admin Awal
+    |--------------------------------------------------------------------------
+    |
+    | Dipakai oleh seeder. Dibaca lewat config agar tetap berfungsi setelah
+    | `php artisan config:cache` (env() di luar file config bernilai null).
+    |
+    */
+
+    'admin' => [
+        'name' => env('ADMIN_NAME', 'Administrator'),
+        'email' => env('ADMIN_EMAIL', 'admin@elhazmi.com'),
+        'password' => env('ADMIN_PASSWORD', 'password'),
+    ],
+
 ];

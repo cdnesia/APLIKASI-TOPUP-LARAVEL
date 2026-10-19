@@ -193,6 +193,20 @@ class TopupFlowTest extends TestCase
         $this->assertSame(PaymentStatus::Expired, Order::query()->first()->payment_status);
     }
 
+    public function test_admin_user_command_creates_and_resets_password(): void
+    {
+        $this->artisan('admin:user', ['email' => 'owner@elhazmi.com', '--password' => 'rahasia123'])
+            ->expectsOutputToContain('berhasil dibuat')->assertSuccessful();
+        $this->assertTrue(Hash::check('rahasia123', User::query()->where('email', 'owner@elhazmi.com')->value('password')));
+
+        $this->artisan('admin:user', ['email' => 'owner@elhazmi.com', '--password' => 'gantibaru456'])
+            ->expectsOutputToContain('berhasil diperbarui')->assertSuccessful();
+        $this->assertTrue(Hash::check('gantibaru456', User::query()->where('email', 'owner@elhazmi.com')->value('password')));
+
+        $this->artisan('admin:user', ['email' => 'owner@elhazmi.com', '--password' => 'pendek'])->assertFailed();
+        $this->post(route('login'), ['email' => 'owner@elhazmi.com', 'password' => 'gantibaru456'])->assertRedirect(route('admin.dashboard'));
+    }
+
     public function test_admin_pages_render_and_require_login(): void
     {
         $this->get(route('admin.dashboard'))->assertRedirect(route('login'));
