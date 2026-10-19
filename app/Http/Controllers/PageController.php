@@ -18,7 +18,7 @@ class PageController extends Controller
         $products = Product::query()
             ->available()
             ->whereHas('brand', fn ($q) => $q->active())
-            ->with('brand')
+            ->with(['brand', 'flashSale'])
             ->when($category, fn ($q) => $q->where('category', $category))
             ->when($search, fn ($q) => $q->where(fn ($q) => $q
                 ->where('name', 'like', "%{$search}%")
