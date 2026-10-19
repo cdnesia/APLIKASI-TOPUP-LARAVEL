@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 
-#[Fillable(['name', 'publisher', 'slug', 'category', 'image', 'banner', 'cover', 'description', 'field_label', 'zone_label', 'input_hint', 'is_active', 'is_popular', 'sort_order'])]
+#[Fillable(['name', 'publisher', 'slug', 'category', 'image', 'banner', 'cover', 'description', 'seo_title', 'seo_description', 'field_label', 'zone_label', 'input_hint', 'is_active', 'is_popular', 'sort_order'])]
 class Brand extends Model
 {
     protected function casts(): array

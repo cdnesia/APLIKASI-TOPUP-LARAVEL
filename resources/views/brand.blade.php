@@ -1,5 +1,5 @@
 @php($wa = \App\Models\Setting::get('whatsapp_admin'))
-<x-layouts.app :title="'Top Up '.$brand->name" :description="'Top up '.$brand->name.' murah dan cepat di '.\App\Models\Setting::get('site_name')">
+<x-layouts.app :title="$seo['title']" :description="$seo['description']" :image="$seo['image']" :schema="$seo['schema']">
     {{-- Header: banner + cover --}}
     <section class="relative">
         <div class="relative h-40 overflow-hidden bg-primary-light dark:bg-ink sm:h-56">

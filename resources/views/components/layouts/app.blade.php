@@ -1,4 +1,4 @@
-@props(['title' => null, 'description' => null])
+@props(['title' => null, 'description' => null, 'image' => null, 'noindex' => false, 'schema' => []])
 @php
     use App\Models\Setting;
     $siteName = Setting::get('site_name');
@@ -20,8 +20,9 @@
 <head>
     @include('partials.theme-script')
     @include('partials.head')
-    <title>{{ $title ? "$title · $siteName" : "$siteName — Top Up Game, Pulsa & E-Wallet" }}</title>
-    <meta name="description" content="{{ $description ?? Setting::get('site_tagline') }}">
+    @php($pageTitle = $title ? "$title · $siteName" : (Setting::get('seo_home_title') ?: \App\Support\Seo::defaultHomeTitle()))
+    <title>{{ $pageTitle }}</title>
+    @include('partials.seo', ['metaDescription' => $description ?? Setting::get('site_tagline'), 'image' => $image, 'noindex' => $noindex, 'schema' => $schema])
     <meta name="theme-color" content="#f5f7fb">
 </head>
 <body class="flex min-h-screen flex-col pb-16 font-sans md:pb-0">

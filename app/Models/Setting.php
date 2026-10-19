@@ -30,14 +30,23 @@ class Setting extends Model
         'margin_flat' => '0',
         'price_rounding' => '100',
         'order_expiry_hours' => '3',
+        // Kode dari Google Search Console (metode verifikasi tag HTML)
+        'google_site_verification' => '',
+        // SEO beranda; kosong = dibuat otomatis
+        'seo_home_title' => '',
+        'seo_home_description' => '',
+        // Template SEO halaman game. Variabel: {nama} {kategori} {publisher} {harga_mulai} {situs}
+        'seo_brand_title' => 'Top Up {nama} Murah & Instan',
+        'seo_brand_description' => 'Top up {nama} murah, aman, dan diproses otomatis dalam hitungan menit. Mulai {harga_mulai}. Cukup masukkan ID, bayar via QRIS, e-wallet, atau transfer bank.',
         // Path file di disk public; kosong = pakai logo/favicon bawaan
         'logo' => '',
         'logo_dark' => '',
         'favicon' => '',
+        'og_image' => '',
     ];
 
     /** Pengaturan berupa file gambar yang diunggah dari admin */
-    public const IMAGES = ['logo', 'logo_dark', 'favicon'];
+    public const IMAGES = ['logo', 'logo_dark', 'favicon', 'og_image'];
 
     /** URL publik gambar pengaturan, atau null bila belum diunggah */
     public static function imageUrl(string $key): ?string

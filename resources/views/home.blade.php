@@ -1,4 +1,8 @@
-<x-layouts.app>
+@php
+    // Deskripsi beranda: dari Pengaturan SEO, atau otomatis menyebut game populer
+    $metaDescription = \App\Models\Setting::get('seo_home_description') ?: \App\Support\Seo::defaultHomeDescription();
+@endphp
+<x-layouts.app :description="$metaDescription">
     <div class="mx-auto max-w-6xl px-4">
         {{-- Banner promo / sapaan --}}
         @if ($banners->isNotEmpty())

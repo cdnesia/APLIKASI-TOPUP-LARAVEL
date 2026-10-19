@@ -8,8 +8,11 @@
         || $order->payment_status === PaymentStatus::WaitingConfirmation
         || ($automatic && $order->payment_status === PaymentStatus::Unpaid);
 @endphp
-<x-layouts.app :title="'Invoice '.$order->invoice">
-    <div class="mx-auto max-w-2xl space-y-5 px-4 py-8">
+{{-- Invoice berisi data pembeli: jangan diindeks mesin pencari --}}
+<x-layouts.app :title="'Invoice '.$order->invoice" noindex>
+    {{-- Desktop: dua kolom (status & pembayaran | rincian). HP: bertumpuk --}}
+    <div class="mx-auto grid max-w-6xl items-start gap-5 px-4 py-8 lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-6">
+        <div class="space-y-5">
         {{-- Status utama --}}
         <section class="card p-5 text-center sm:p-6">
             <p class="text-xs text-text-muted">Nomor Invoice</p>
@@ -148,6 +151,9 @@
             </section>
         @endif
 
+        </div>
+
+        <aside class="space-y-4 lg:sticky lg:top-36">
         {{-- Rincian pesanan --}}
         <section class="card p-5 sm:p-6">
             <h3 class="mb-3">Rincian Pesanan</h3>
@@ -183,12 +189,13 @@
             </dl>
         </section>
 
-        <div class="flex flex-col gap-2 sm:flex-row sm:justify-center">
+        <div class="flex flex-col gap-2 sm:flex-row lg:flex-col">
             <a href="{{ route('home') }}" class="btn-secondary">Belanja Lagi</a>
             @if ($wa)
                 <a href="https://wa.me/{{ $wa }}?text={{ urlencode("Halo admin, saya ingin menanyakan pesanan {$order->invoice}") }}" target="_blank" rel="noopener" class="btn-ghost">Hubungi CS</a>
             @endif
         </div>
+        </aside>
     </div>
 
     @push('scripts')

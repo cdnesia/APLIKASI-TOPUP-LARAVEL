@@ -46,6 +46,62 @@
                 </div>
             </section>
 
+            <section class="card space-y-6 p-5 sm:p-6">
+                <div>
+                    <h3>SEO & Google</h3>
+                    <p class="mt-1 text-xs text-text-muted">Atur tampilan situs di hasil pencarian Google. Kolom kosong = dibuat otomatis (lihat teks samar di dalam kolom).</p>
+                </div>
+
+                <div class="space-y-3">
+                    <h4 class="text-sm font-semibold">Beranda</h4>
+                    <x-seo-fields title-name="seo_home_title" desc-name="seo_home_description"
+                        :title-value="old('seo_home_title', $settings['seo_home_title'])" :desc-value="old('seo_home_description', $settings['seo_home_description'])"
+                        :title-placeholder="\App\Support\Seo::defaultHomeTitle()" :desc-placeholder="\App\Support\Seo::defaultHomeDescription()"
+                        :url="route('home')" hint="Ideal: judul ≤60 karakter, deskripsi 120–160 karakter." />
+                </div>
+
+                <div class="space-y-3 border-t border-border pt-5">
+                    <div>
+                        <h4 class="text-sm font-semibold">Template Halaman Game / Produk</h4>
+                        <p class="mt-1 text-xs text-text-muted">Berlaku untuk semua halaman top up, kecuali brand yang diisi SEO-nya sendiri di menu Brand.</p>
+                    </div>
+                    <x-seo-fields title-name="seo_brand_title" desc-name="seo_brand_description"
+                        :title-value="old('seo_brand_title', $settings['seo_brand_title'])" :desc-value="old('seo_brand_description', $settings['seo_brand_description'])"
+                        :url="route('home').'/topup/…'" :suffix="$settings['site_name']" :example="\App\Support\Seo::exampleVars()"
+                        hint="Variabel: <code>{nama}</code> <code>{kategori}</code> <code>{publisher}</code> <code>{harga_mulai}</code> <code>{situs}</code>. Nama situs otomatis ditambahkan di belakang judul." />
+                </div>
+
+                <div class="grid gap-4 border-t border-border pt-5 sm:grid-cols-[180px_1fr] sm:items-start">
+                    <img src="{{ \App\Models\Setting::imageUrl('og_image') ?? asset('og-image.png') }}" alt="Pratinjau gambar share" class="aspect-[1200/630] w-full rounded-xl border border-border object-cover">
+                    <div>
+                        <label for="og_image" class="label">Gambar Share (WhatsApp, Facebook, Telegram)</label>
+                        <input id="og_image" name="og_image" type="file" accept=".png,.jpg,.jpeg,.webp"
+                            class="input file:mr-3 file:rounded-md file:border-0 file:bg-primary-light file:px-3 file:py-1 file:text-xs file:font-semibold file:text-primary @error('og_image') input-error @enderror">
+                        @error('og_image') <p class="field-error">{{ $message }}</p> @else <p class="hint">Ukuran 1200×630 px. Halaman game memakai cover brand bila ada.</p> @enderror
+                        @if ($settings['og_image'])
+                            <label class="mt-2 inline-flex items-center gap-2 text-xs text-danger">
+                                <input type="checkbox" name="remove_og_image" value="1" class="rounded border-border-dark"> Hapus & kembali ke bawaan
+                            </label>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="space-y-3 border-t border-border pt-5">
+                    <div>
+                        <label for="google_site_verification" class="label">Kode Verifikasi Google Search Console</label>
+                        <input id="google_site_verification" name="google_site_verification" value="{{ old('google_site_verification', $settings['google_site_verification']) }}" class="input @error('google_site_verification') input-error @enderror" placeholder="mis. aBcD1234efGh...">
+                        @error('google_site_verification') <p class="field-error">{{ $message }}</p> @else <p class="hint">Search Console → Tambah properti → Awalan URL → Verifikasi lewat <b>Tag HTML</b> → salin isi <code>content="…"</code> saja.</p> @enderror
+                    </div>
+                    <div class="rounded-lg bg-bg p-3 text-xs">
+                        <p class="font-medium">Sitemap untuk dikirim ke Search Console:</p>
+                        <div class="mt-1 flex items-center gap-2">
+                            <code class="break-all">{{ $sitemapUrl }}</code>
+                            <a href="{{ $sitemapUrl }}" target="_blank" class="shrink-0 text-primary hover:underline">Buka ↗</a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             <section class="card space-y-5 p-5 sm:p-6">
                 <div>
                     <h3>Logo & Favicon</h3>

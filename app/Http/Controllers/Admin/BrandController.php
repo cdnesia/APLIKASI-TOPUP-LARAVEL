@@ -40,6 +40,8 @@ class BrandController extends Controller
             'name' => ['required', 'string', 'max:100'],
             'publisher' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],
+            'seo_title' => ['nullable', 'string', 'max:120'],
+            'seo_description' => ['nullable', 'string', 'max:300'],
             'field_label' => ['required', 'string', 'max:50'],
             'zone_label' => ['nullable', 'string', 'max:50'],
             'input_hint' => ['nullable', 'string', 'max:150'],

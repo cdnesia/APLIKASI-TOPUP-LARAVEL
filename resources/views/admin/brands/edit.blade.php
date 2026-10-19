@@ -96,6 +96,19 @@
             <textarea id="description" name="description" rows="4" class="input">{{ old('description', $brand->description) }}</textarea>
         </div>
 
+        <div class="space-y-3 rounded-xl border border-border bg-bg/50 p-4">
+            <div>
+                <h3 class="text-base">SEO Halaman Ini</h3>
+                <p class="mt-1 text-xs text-text-muted">Kosongkan untuk memakai template di <a href="{{ route('admin.settings.edit') }}" class="text-primary hover:underline">Pengaturan → SEO</a>. Variabel <code>{nama}</code> <code>{harga_mulai}</code> dll. tetap bisa dipakai.</p>
+            </div>
+            @php($minPrice = $brand->products()->available()->min('selling_price'))
+            @php($vars = ['{nama}' => $brand->name, '{kategori}' => $brand->category, '{publisher}' => $brand->publisher ?: $brand->name, '{harga_mulai}' => $minPrice ? rupiah($minPrice) : 'Rp…', '{situs}' => \App\Models\Setting::get('site_name')])
+            <x-seo-fields title-name="seo_title" desc-name="seo_description"
+                :title-value="old('seo_title', $brand->seo_title)" :desc-value="old('seo_description', $brand->seo_description)"
+                :title-placeholder="strtr(\App\Models\Setting::get('seo_brand_title'), $vars)" :desc-placeholder="strtr(\App\Models\Setting::get('seo_brand_description'), $vars)"
+                :url="route('brands.show', $brand)" :suffix="\App\Models\Setting::get('site_name')" :example="$vars" />
+        </div>
+
         <div class="flex flex-wrap gap-6">
             <label class="flex items-center gap-2"><input type="checkbox" name="is_active" value="1" @checked(old('is_active', $brand->is_active)) class="rounded border-border-dark text-primary"> Tampilkan di website</label>
             <label class="flex items-center gap-2"><input type="checkbox" name="is_popular" value="1" @checked(old('is_popular', $brand->is_popular)) class="rounded border-border-dark text-primary"> Tandai populer</label>

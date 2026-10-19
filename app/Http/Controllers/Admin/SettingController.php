@@ -16,6 +16,7 @@ class SettingController extends Controller
         return view('admin.settings', [
             'settings' => collect(Setting::DEFAULTS)->map(fn ($default, $key) => Setting::get($key)),
             'webhookUrl' => route('webhook.digiflazz'),
+            'sitemapUrl' => route('sitemap'),
         ]);
     }
 
@@ -30,6 +31,11 @@ class SettingController extends Controller
             'contact_address' => ['nullable', 'string', 'max:300'],
             'instagram' => ['nullable', 'string', 'max:50', 'regex:/^[A-Za-z0-9._]+$/'],
             'operational_hours' => ['nullable', 'string', 'max:100'],
+            'google_site_verification' => ['nullable', 'string', 'max:100', 'regex:/^[A-Za-z0-9_\-]+$/'],
+            'seo_home_title' => ['nullable', 'string', 'max:120'],
+            'seo_home_description' => ['nullable', 'string', 'max:300'],
+            'seo_brand_title' => ['required', 'string', 'max:120'],
+            'seo_brand_description' => ['required', 'string', 'max:300'],
             'margin_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'margin_flat' => ['required', 'integer', 'min:0'],
             'price_rounding' => ['required', 'integer', 'min:1'],
@@ -38,11 +44,14 @@ class SettingController extends Controller
             'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
             'logo_dark' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
             'favicon' => ['nullable', 'file', 'mimes:png,ico', 'max:512'],
+            'og_image' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048', 'dimensions:min_width=600,min_height=315'],
         ], [
             'logo.mimes' => 'Logo harus berformat PNG, JPG, atau WEBP.',
             'logo_dark.mimes' => 'Logo harus berformat PNG, JPG, atau WEBP.',
             'favicon.mimes' => 'Favicon harus berformat PNG atau ICO.',
+            'og_image.dimensions' => 'Gambar share minimal 600×315 piksel (disarankan 1200×630).',
             'whatsapp_admin.regex' => 'Gunakan format 62xxx, contoh: 6281234567890',
+            'google_site_verification.regex' => 'Isi kodenya saja (isi atribut content), bukan seluruh tag <meta>.',
             'instagram.regex' => 'Isi username saja tanpa @, contoh: elhazmi.store',
         ]);
 

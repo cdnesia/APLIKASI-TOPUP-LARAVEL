@@ -226,7 +226,7 @@ class TopupFlowTest extends TestCase
             'favicon' => UploadedFile::fake()->image('ikon.png', 512, 512),
         ])->assertRedirect()->assertSessionHasNoErrors();
 
-        foreach (Setting::IMAGES as $key) {
+        foreach (['logo', 'logo_dark', 'favicon'] as $key) {
             $this->assertStringStartsWith('branding/', Setting::get($key));
             Storage::disk('public')->assertExists(Setting::get($key));
         }
@@ -246,6 +246,71 @@ class TopupFlowTest extends TestCase
         $this->assertSame('', Setting::get('favicon'));
         Storage::disk('public')->assertMissing($oldFavicon);
         $this->get(route('home'))->assertSee('favicon.svg');
+    }
+
+    public function test_seo_sitemap_robots_and_meta_tags(): void
+    {
+        [$brand] = $this->makeOrderSetup();
+        Setting::put(['google_site_verification' => 'kodeVerifikasi123']);
+
+        $this->get(route('sitemap'))->assertOk()
+            ->assertHeader('Content-Type', 'application/xml; charset=UTF-8')
+            ->assertSee(route('brands.show', $brand), false)
+            ->assertSee(route('price-list'), false);
+
+        $this->get(route('robots'))->assertOk()
+            ->assertSee('Disallow: /admin')
+            ->assertSee('Disallow: /invoice/')
+            ->assertSee('Sitemap: '.route('sitemap'));
+
+        $this->get(route('brands.show', $brand))->assertOk()
+            ->assertSee('<title>Top Up Mobile Legends Murah &amp; Instan', false)
+            ->assertSee('<link rel="canonical" href="'.route('brands.show', $brand).'">', false)
+            ->assertSee('<meta name="google-site-verification" content="kodeVerifikasi123">', false)
+            ->assertSee('"@type":"AggregateOffer"', false)
+            ->assertSee('index, follow', false);
+
+        // Invoice berisi data pembeli: tidak boleh diindeks
+        $order = Order::query()->create([
+            'invoice' => 'ELHSEO1', 'brand_name' => 'X', 'product_name' => 'X', 'sku' => 'X', 'customer_no' => '1',
+            'customer_display' => '1', 'whatsapp' => '62812', 'base_price' => 1, 'selling_price' => 1, 'total' => 1,
+            'payment_status' => PaymentStatus::Unpaid, 'status' => OrderStatus::Waiting, 'expires_at' => now()->addHour(),
+        ]);
+        $this->get(route('orders.show', $order))->assertSee('noindex, nofollow', false)->assertDontSee('application/ld+json', false);
+    }
+
+    public function test_admin_can_edit_seo_meta_for_home_and_brand(): void
+    {
+        [$brand] = $this->makeOrderSetup();
+        $admin = User::factory()->create();
+        $base = array_diff_key(Setting::DEFAULTS, array_flip(Setting::IMAGES));
+
+        // Template brand & judul beranda dari Pengaturan
+        $this->actingAs($admin)->put(route('admin.settings.update'), array_merge($base, [
+            'seo_home_title' => 'Top Up Game Termurah se-Indonesia',
+            'seo_home_description' => 'Deskripsi beranda buatan admin.',
+            'seo_brand_title' => 'Beli {nama} di {situs}',
+            'seo_brand_description' => '{nama} mulai {harga_mulai}.',
+        ]))->assertSessionHasNoErrors();
+
+        $this->get(route('home'))
+            ->assertSee('<title>Top Up Game Termurah se-Indonesia</title>', false)
+            ->assertSee('content="Deskripsi beranda buatan admin."', false);
+        $this->get(route('brands.show', $brand))
+            ->assertSee('<title>Beli Mobile Legends di elhazmi.com · elhazmi.com</title>', false)
+            ->assertSee('content="Mobile Legends mulai Rp21.200."', false);
+
+        // Isian khusus brand menimpa template
+        $this->put(route('admin.brands.update', $brand), [
+            'name' => $brand->name, 'field_label' => 'User ID', 'is_active' => 1,
+            'seo_title' => 'Diamond ML Murah', 'seo_description' => 'Khusus {nama}.',
+        ])->assertSessionHasNoErrors();
+
+        $this->get(route('brands.show', $brand))
+            ->assertSee('<title>Diamond ML Murah · elhazmi.com</title>', false)
+            ->assertSee('content="Khusus Mobile Legends."', false);
+        $this->get(route('admin.brands.edit', $brand))->assertOk()->assertSee('Pratinjau di Google');
+        $this->get(route('admin.settings.edit'))->assertOk()->assertSee('Template Halaman Game');
     }
 
     public function test_admin_pages_render_and_require_login(): void
