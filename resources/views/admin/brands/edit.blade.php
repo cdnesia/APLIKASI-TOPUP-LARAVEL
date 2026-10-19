@@ -31,7 +31,7 @@
                 </div>
                 <label for="banner" class="sr-only">Unggah banner</label>
                 <input id="banner" name="banner" type="file" accept="image/*" data-preview="preview-banner" class="input mt-2 text-xs @error('banner') input-error @enderror">
-                @error('banner') <p class="field-error">{{ $message }}</p> @else <p class="hint">Lebar, mis. 1200×400 px, maks. 4 MB.</p> @enderror
+                @error('banner') <p class="field-error">{{ $message }}</p> @else <p class="hint">Disarankan 1600×600 px (atau minimal 1200 px lebarnya), maks. 4 MB. Gambar ditampilkan utuh; sisi kosong diisi versi buram.</p> @enderror
                 @if ($brand->banner)
                     <label class="mt-2 flex items-center gap-2 text-xs text-danger"><input type="checkbox" name="remove_banner" value="1" class="rounded border-border-dark"> Hapus banner</label>
                 @endif

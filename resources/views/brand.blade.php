@@ -2,11 +2,15 @@
 <x-layouts.app :title="$seo['title']" :description="$seo['description']" :image="$seo['image']" :schema="$seo['schema']">
     {{-- Header: banner + cover --}}
     <section class="relative">
-        <div class="relative h-40 overflow-hidden bg-primary-light dark:bg-ink sm:h-56">
+        <div class="relative h-44 overflow-hidden bg-ink sm:h-72">
             @if ($brand->bannerUrl())
-                <img src="{{ $brand->bannerUrl() }}" alt="" class="h-full w-full object-cover">
-                <div class="absolute inset-0 bg-gradient-to-t from-bg via-bg/20 to-transparent"></div>
+                {{-- Latar: gambar yang sama diburamkan, mengisi sisi kosong bila rasio gambar tidak pas --}}
+                <img src="{{ $brand->bannerUrl() }}" alt="" aria-hidden="true" class="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-2xl">
+                {{-- Gambar utama ditampilkan utuh (tidak terpotong) --}}
+                <img src="{{ $brand->bannerUrl() }}" alt="Banner {{ $brand->name }}" class="relative mx-auto h-full w-full max-w-6xl object-contain">
+                <div class="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-bg to-transparent"></div>
             @else
+                <div class="absolute inset-0 bg-primary-light dark:bg-ink"></div>
                 <div class="pointer-events-none absolute -top-24 right-0 h-72 w-72 rounded-full bg-primary/25 blur-[110px] dark:bg-primary/40"></div>
                 <div class="pointer-events-none absolute -bottom-32 left-1/4 h-64 w-64 rounded-full bg-primary/20 blur-[110px]"></div>
                 <div class="absolute inset-0 bg-gradient-to-t from-bg to-transparent"></div>
