@@ -78,6 +78,31 @@ class DuitkuClient
         ]);
     }
 
+    /**
+     * Daftar metode yang aktif di proyek Duitku beserta logo resminya.
+     * Tiap elemen: paymentMethod (kode), paymentName, paymentImage (URL), totalFee.
+     *
+     * @return array<int, array{paymentMethod: string, paymentName: string, paymentImage: string, totalFee: string}>
+     */
+    public function paymentMethods(int $amount = 10_000, int $timeout = 30): array
+    {
+        // Nominal Rp10.000 agar metode VA & gerai (minimum Rp10.000) ikut terdaftar
+        $datetime = now('Asia/Jakarta')->format('Y-m-d H:i:s');
+
+        $data = $this->post('/paymentmethod/getpaymentmethod', [
+            'merchantcode' => $this->merchantCode,
+            'amount' => $amount,
+            'datetime' => $datetime,
+            'signature' => $this->sign($this->merchantCode.$amount.$datetime),
+        ], $timeout);
+
+        if (($data['responseCode'] ?? null) !== '00') {
+            throw new DuitkuException($data['responseMessage'] ?? 'Gagal mengambil daftar metode pembayaran Duitku.');
+        }
+
+        return $data['paymentFee'] ?? [];
+    }
+
     public function verifyCallback(array $payload): bool
     {
         if (! $this->isConfigured() || blank($payload['signature'] ?? null)) {
@@ -102,7 +127,7 @@ class DuitkuClient
             : 'https://passport.duitku.com/webapi/api/merchant';
     }
 
-    protected function post(string $path, array $payload): array
+    protected function post(string $path, array $payload, int $timeout = 30): array
     {
         if (! $this->isConfigured()) {
             ApiLog::record(['provider' => 'duitku', 'direction' => 'out', 'endpoint' => $path, 'success' => false, 'message' => 'Kredensial Duitku belum diatur di file .env.']);
@@ -114,7 +139,7 @@ class DuitkuClient
         $start = microtime(true);
 
         try {
-            $response = Http::acceptJson()->asJson()->timeout(30)->post($this->baseUrl().$path, $payload);
+            $response = Http::acceptJson()->asJson()->timeout($timeout)->post($this->baseUrl().$path, $payload);
         } catch (ConnectionException $e) {
             ApiLog::record($log + ['success' => false, 'message' => 'Koneksi gagal: '.$e->getMessage(), 'duration_ms' => (int) round((microtime(true) - $start) * 1000)]);
 
@@ -138,11 +163,12 @@ class DuitkuClient
             throw new DuitkuException($message);
         }
 
-        // statusCode: 00 = sukses/lunas, 01 = menunggu pembayaran (wajar saat cek status)
-        $code = $data['statusCode'] ?? null;
+        // statusCode: 00 = sukses/lunas, 01 = menunggu pembayaran (wajar saat cek status).
+        // Endpoint daftar metode memakai responseCode/responseMessage.
+        $code = $data['statusCode'] ?? $data['responseCode'] ?? null;
         ApiLog::record($log + [
             'success' => $code === '00' || ($code === '01' && $path === '/transactionStatus'),
-            'message' => trim(($code ? "[{$code}] " : '').($data['statusMessage'] ?? '')),
+            'message' => trim(($code ? "[{$code}] " : '').($data['statusMessage'] ?? $data['responseMessage'] ?? '')),
         ]);
 
         return $data;

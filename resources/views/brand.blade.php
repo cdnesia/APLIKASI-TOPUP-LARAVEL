@@ -146,18 +146,31 @@
                     @else
                         <div class="grid gap-3 sm:grid-cols-2">
                             @foreach ($paymentMethods as $method)
-                                <label class="cursor-pointer">
+                                @php($online = $paymentStatus[$method->id] ?? null)
+                                <label class="{{ $online === false ? 'cursor-not-allowed' : 'cursor-pointer' }}">
                                     <input type="radio" name="payment_method_id" value="{{ $method->id }}" data-fee="{{ $method->fee }}" data-min="{{ $method->minAmount() }}" data-name="{{ $method->name }}"
-                                        class="peer sr-only" @checked(old('payment_method_id') == $method->id) required>
+                                        @if ($online === false) data-offline disabled @endif
+                                        class="peer sr-only" @checked($online !== false && old('payment_method_id') == $method->id) required>
                                     <div class="flex items-center gap-3 rounded-xl border border-border bg-bg/50 p-3 transition peer-checked:border-primary peer-checked:bg-primary-light peer-checked:ring-2 peer-checked:ring-primary/25 hover:border-primary/50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50 peer-disabled:hover:border-border">
-                                        @if ($method->type !== 'qris' && $method->imageUrl())
-                                            <img src="{{ $method->imageUrl() }}" alt="" class="h-8 w-12 rounded bg-white object-contain p-0.5">
+                                        @if ($method->logoUrl())
+                                            <img src="{{ $method->logoUrl() }}" alt="" class="h-8 w-12 shrink-0 rounded border border-border bg-white object-contain p-0.5">
                                         @else
                                             <span class="flex h-8 w-12 items-center justify-center rounded bg-surface text-[10px] font-bold text-text-muted uppercase">{{ $method->type }}</span>
                                         @endif
-                                        <div>
-                                            <p class="font-semibold">{{ $method->name }}</p>
-                                            <p class="text-xs text-text-muted">{{ $method->fee ? 'Biaya '.rupiah($method->fee) : 'Tanpa biaya admin' }}{{ $method->isAutomatic() ? ' · Otomatis' : '' }}</p>
+                                        <div class="min-w-0 flex-1">
+                                            <div class="flex items-center justify-between gap-2">
+                                                <p class="font-semibold">{{ $method->name }}</p>
+                                                @if ($online === true)
+                                                    <span class="flex shrink-0 items-center gap-1 text-[11px] font-medium text-success"><span class="h-1.5 w-1.5 rounded-full bg-success"></span>Online</span>
+                                                @elseif ($online === false)
+                                                    <span class="flex shrink-0 items-center gap-1 text-[11px] font-medium text-danger"><span class="h-1.5 w-1.5 rounded-full bg-danger"></span>Offline</span>
+                                                @endif
+                                            </div>
+                                            @if ($online === false)
+                                                <p class="text-xs text-danger">Sedang gangguan, pilih metode lain</p>
+                                            @else
+                                                <p class="text-xs text-text-muted">{{ $method->fee ? 'Biaya '.rupiah($method->fee) : 'Tanpa biaya admin' }}{{ $method->isAutomatic() ? ' · Otomatis' : '' }}</p>
+                                            @endif
                                             @if ($method->minAmount())
                                                 <p class="hidden text-xs text-warning" data-min-note>Min. total {{ rupiah($method->minAmount()) }}</p>
                                             @endif
@@ -253,11 +266,11 @@
                 const update = () => {
                     const item = form.querySelector('input[name=product_id]:checked');
 
-                    // Nonaktifkan metode yang minimum totalnya belum terpenuhi (mis. VA min. Rp10.000)
+                    // Nonaktifkan metode yang offline atau minimum totalnya belum terpenuhi (mis. VA min. Rp10.000)
                     form.querySelectorAll('input[name=payment_method_id]').forEach((radio) => {
                         const tooLow = !!item && Number(item.dataset.price) + Number(radio.dataset.fee) < Number(radio.dataset.min);
-                        radio.disabled = tooLow;
-                        if (tooLow) radio.checked = false;
+                        radio.disabled = tooLow || radio.hasAttribute('data-offline');
+                        if (radio.disabled) radio.checked = false;
                         radio.closest('label').querySelector('[data-min-note]')?.classList.toggle('hidden', !tooLow);
                     });
 

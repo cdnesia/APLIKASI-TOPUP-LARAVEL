@@ -20,18 +20,23 @@
                     @endforeach
                 </select>
             </div>
+            @if ($manualOnly ?? false)
+            <input type="hidden" id="gateway_code" name="gateway_code" value="">
+            <p class="hint sm:col-span-2">Untuk pembayaran otomatis (VA, e-wallet, QRIS Duitku) tidak perlu form ini — cukup centang di halaman <a href="{{ route('admin.payment-methods.index') }}" class="text-primary hover:underline">Metode Pembayaran</a>.</p>
+            @else
             <div class="sm:col-span-2">
                 <label for="gateway_code" class="label">Proses Pembayaran</label>
                 <select id="gateway_code" name="gateway_code" class="input @error('gateway_code') input-error @enderror">
                     <option value="">Manual — pembeli transfer & unggah bukti, admin konfirmasi</option>
                     <optgroup label="Otomatis via Duitku (lunas terdeteksi sendiri)">
-                        @foreach (\App\Models\PaymentMethod::GATEWAY_CODES as $code => $label)
+                        @foreach (\App\Models\PaymentMethod::GATEWAY_CODES + array_filter([$method->gateway_code => $method->gateway_code]) as $code => $label)
                             <option value="{{ $code }}" @selected(old('gateway_code', $method->gateway_code) === $code)>{{ $label }} ({{ $code }})</option>
                         @endforeach
                     </optgroup>
                 </select>
                 @error('gateway_code') <p class="field-error">{{ $message }}</p> @else <p class="hint">Pastikan metode ini sudah aktif di dashboard Duitku pada proyek Anda.</p> @enderror
             </div>
+            @endif
             <div data-account>
                 <label for="account_number" class="label">Nomor Rekening / Akun</label>
                 <input id="account_number" name="account_number" value="{{ old('account_number', $method->account_number) }}" class="input @error('account_number') input-error @enderror">

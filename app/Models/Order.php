@@ -95,6 +95,19 @@ class Order extends Model
         return $this->payment_status === PaymentStatus::Unpaid && $this->expires_at?->isPast();
     }
 
+    /** Logo metode bayar dari snapshot; gambar QRIS manual (kode QR) tidak dipakai sebagai logo */
+    public function paymentLogoUrl(): ?string
+    {
+        $pay = $this->payment_snapshot ?? [];
+        $automatic = filled($pay['gateway_code'] ?? null);
+
+        if (! empty($pay['image']) && ($automatic || ($pay['type'] ?? null) !== 'qris')) {
+            return Storage::disk('public')->url($pay['image']);
+        }
+
+        return PaymentMethod::defaultLogoUrl($pay['gateway_code'] ?? null, $pay['type'] ?? null);
+    }
+
     public function paymentImageUrl(): ?string
     {
         $image = $this->payment_snapshot['image'] ?? null;

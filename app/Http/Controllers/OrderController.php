@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Services\Duitku\DuitkuException;
+use App\Services\Duitku\PaymentMethodStatus;
 use App\Services\OrderService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -16,7 +17,7 @@ use Illuminate\View\View;
 
 class OrderController extends Controller
 {
-    public function __construct(protected OrderService $orders) {}
+    public function __construct(protected OrderService $orders, protected PaymentMethodStatus $paymentStatus) {}
 
     public function store(Request $request, Brand $brand): RedirectResponse
     {
@@ -51,6 +52,13 @@ class OrderController extends Controller
         if ($product->currentPrice() + $method->fee < $method->minAmount()) {
             return back()->withInput()
                 ->withErrors(['payment_method_id' => "{$method->name} hanya untuk total minimal ".rupiah($method->minAmount()).'. Pilih metode lain, mis. QRIS.'])
+                ->with('toast', ['warning', '⚠ Periksa kembali isian form Anda.']);
+        }
+
+        // Cek status setelah validasi lokal agar tidak memanggil Duitku tanpa perlu
+        if ($this->paymentStatus->isOnline($method) === false) {
+            return back()->withInput()
+                ->withErrors(['payment_method_id' => "{$method->name} sedang offline. Silakan pilih metode pembayaran lain."])
                 ->with('toast', ['warning', '⚠ Periksa kembali isian form Anda.']);
         }
 

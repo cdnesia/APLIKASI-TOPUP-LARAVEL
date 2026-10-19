@@ -14,6 +14,7 @@ class PaymentMethod extends Model
         'bank' => 'Transfer Bank',
         'ewallet' => 'E-Wallet',
         'qris' => 'QRIS',
+        'retail' => 'Gerai Retail',
     ];
 
     /** Kode metode pembayaran Duitku yang umum dipakai (lihat dashboard Duitku > Proyek) */
@@ -25,6 +26,11 @@ class PaymentMethod extends Model
         'I1' => 'VA BNI',
         'BR' => 'VA BRI',
         'BT' => 'VA Permata',
+        'VA' => 'VA Maybank',
+        'BV' => 'VA BSI',
+        'S1' => 'VA Sampoerna',
+        'NC' => 'VA BNC',
+        'AG' => 'VA Artha Graha',
         'B1' => 'VA CIMB Niaga',
         'A1' => 'VA ATM Bersama',
         'DA' => 'DANA',
@@ -34,6 +40,17 @@ class PaymentMethod extends Model
         'IR' => 'Indomaret',
         'FT' => 'Alfamart / Pos / Pegadaian',
     ];
+
+    /** Jenis metode untuk kode Duitku; kode yang tidak dikenal dianggap Virtual Account (bank) */
+    public static function typeForGateway(string $code): string
+    {
+        return match ($code) {
+            'SP', 'NQ', 'GQ', 'SQ', 'DQ' => 'qris',
+            'OV', 'SA', 'LA', 'DA', 'SL', 'OL', 'JP' => 'ewallet',
+            'IR', 'FT' => 'retail',
+            default => 'bank',
+        };
+    }
 
     protected function casts(): array
     {
@@ -71,6 +88,31 @@ class PaymentMethod extends Model
     public function imageUrl(): ?string
     {
         return $this->image ? Storage::disk('public')->url($this->image) : null;
+    }
+
+    /**
+     * Logo untuk ditampilkan: unggahan admin, atau logo bawaan sesuai kode Duitku / jenis.
+     * Gambar QRIS manual adalah kode QR, jadi tidak dipakai sebagai logo.
+     */
+    public function logoUrl(): ?string
+    {
+        if ($this->image && ! ($this->type === 'qris' && ! $this->isAutomatic())) {
+            return $this->imageUrl();
+        }
+
+        return self::defaultLogoUrl($this->gateway_code, $this->type);
+    }
+
+    /** Logo bawaan di public/images/payments/{kode}.svg; QRIS tanpa kode memakai qris.svg */
+    public static function defaultLogoUrl(?string $gatewayCode, ?string $type = null): ?string
+    {
+        $file = match (true) {
+            filled($gatewayCode) => $gatewayCode,
+            $type === 'qris' => 'qris',
+            default => null,
+        };
+
+        return $file && is_file(public_path("images/payments/{$file}.svg")) ? asset("images/payments/{$file}.svg") : null;
     }
 
     /** Data yang disalin ke order agar instruksi bayar tetap sama walau metode diubah */

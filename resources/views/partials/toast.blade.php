@@ -15,6 +15,43 @@
         }, 3000);
     }
 
+    /**
+     * Salin teks ke clipboard. Clipboard API butuh HTTPS & sering ditolak di Safari iOS / browser
+     * dalam aplikasi (WhatsApp, Instagram), jadi ada cadangan execCommand lewat textarea tersembunyi.
+     */
+    async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                return true;
+            } catch {}
+        }
+        const area = document.createElement('textarea');
+        area.value = text;
+        area.setAttribute('readonly', '');
+        area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;font-size:16px';
+        document.body.appendChild(area);
+        area.select();
+        area.setSelectionRange(0, text.length);
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch {}
+        area.remove();
+        return ok;
+    }
+
+    // Semua tombol [data-copy] di halaman mana pun; tombol berubah jadi "Tersalin" selama 2 detik
+    document.addEventListener('click', async (event) => {
+        const btn = event.target.closest('[data-copy]');
+        if (!btn) return;
+        event.preventDefault();
+        const ok = await copyText(btn.dataset.copy);
+        showToast(ok ? '✓ Berhasil disalin' : '✕ Gagal menyalin. Tekan lama teksnya untuk menyalin manual.', ok ? 'success' : 'error');
+        if (!ok) return;
+        btn.classList.add('is-copied');
+        clearTimeout(btn.copiedTimer);
+        btn.copiedTimer = setTimeout(() => btn.classList.remove('is-copied'), 2000);
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
         @if (session('toast'))
             showToast(@js(session('toast')[1]), @js(session('toast')[0]));

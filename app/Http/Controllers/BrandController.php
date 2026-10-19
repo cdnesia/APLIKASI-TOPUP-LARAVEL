@@ -6,11 +6,14 @@ use App\Models\Brand;
 use App\Models\PaymentMethod;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Services\Duitku\PaymentMethodStatus;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 class BrandController extends Controller
 {
+    public function __construct(protected PaymentMethodStatus $paymentStatus) {}
+
     public function show(Brand $brand): View
     {
         abort_unless($brand->is_active, 404);
@@ -29,12 +32,19 @@ class BrandController extends Controller
             $groups->put($regular->count() > 1 ? $this->typeLabel($type) : 'Pilih Nominal', $items->values());
         }
 
+        // Status online/offline Duitku per metode (id => true/false/null); offline ditaruh paling bawah
+        $onlineCodes = $this->paymentStatus->onlineCodes();
+        $paymentMethods = PaymentMethod::query()->active()->get();
+        $paymentStatus = $paymentMethods->mapWithKeys(fn (PaymentMethod $m) => [$m->id => $this->paymentStatus->isOnline($m, $onlineCodes)]);
+        $paymentMethods = $paymentMethods->sortBy(fn (PaymentMethod $m) => $paymentStatus[$m->id] === false ? 1 : 0)->values();
+
         return view('brand', [
             'brand' => $brand,
             'groups' => $groups,
             'hasProducts' => $products->isNotEmpty(),
             'selected' => (int) request('item'),
-            'paymentMethods' => PaymentMethod::query()->active()->get(),
+            'paymentMethods' => $paymentMethods,
+            'paymentStatus' => $paymentStatus,
             'seo' => $this->seo($brand, $products),
         ]);
     }

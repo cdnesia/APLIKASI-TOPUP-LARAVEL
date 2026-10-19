@@ -64,6 +64,7 @@ Route::prefix('admin')->name('admin.')->middleware('auth')->group(function () {
     Route::get('/brand/{brand:id}/edit', [Admin\BrandController::class, 'edit'])->name('brands.edit');
     Route::put('/brand/{brand:id}', [Admin\BrandController::class, 'update'])->name('brands.update');
 
+    Route::post('/metode-pembayaran/aktifkan', [Admin\PaymentMethodController::class, 'activate'])->name('payment-methods.activate');
     Route::resource('metode-pembayaran', Admin\PaymentMethodController::class)
         ->except('show')
         ->parameters(['metode-pembayaran' => 'paymentMethod'])

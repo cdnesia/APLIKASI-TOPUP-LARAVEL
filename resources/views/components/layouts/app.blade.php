@@ -13,7 +13,15 @@
     $search = request()->routeIs('home') ? request('q') : null;
     $footerCategories = \App\Models\Brand::query()->active()->whereHas('products', fn ($q) => $q->available())
         ->distinct()->orderBy('category')->limit(6)->pluck('category');
-    $footerPayments = \App\Models\PaymentMethod::query()->active()->pluck('name');
+    // Logo metode aktif untuk footer; logo kembar (mis. QRIS ShopeePay & ShopeePay) cukup tampil sekali
+    $footerPayments = \App\Models\PaymentMethod::query()->active()->get()
+        ->map(fn ($m) => [
+            'name' => $m->name,
+            'logo' => $logo = $m->logoUrl(),
+            // Bandingkan isi file agar logo sama dengan nama file berbeda tetap terdeteksi kembar
+            'key' => $m->image && is_file($file = \Illuminate\Support\Facades\Storage::disk('public')->path($m->image)) ? md5_file($file) : ($logo ?? $m->name),
+        ])
+        ->unique('key')->values();
 @endphp
 <!DOCTYPE html>
 <html lang="id" class="scroll-smooth">
@@ -186,7 +194,13 @@
                     <p class="shrink-0 text-xs font-semibold tracking-wider text-slate-500 uppercase">Metode Pembayaran</p>
                     <ul class="flex flex-wrap gap-2">
                         @foreach ($footerPayments as $method)
-                            <li class="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200">{{ $method }}</li>
+                            @if ($method['logo'])
+                                <li class="flex h-9 w-16 items-center justify-center rounded-lg bg-white p-1.5" title="{{ $method['name'] }}">
+                                    <img src="{{ $method['logo'] }}" alt="{{ $method['name'] }}" class="max-h-full max-w-full object-contain" loading="lazy">
+                                </li>
+                            @else
+                                <li class="flex h-9 items-center rounded-lg border border-white/10 bg-white/5 px-3 text-xs font-medium text-slate-200">{{ $method['name'] }}</li>
+                            @endif
                         @endforeach
                     </ul>
                 </div>

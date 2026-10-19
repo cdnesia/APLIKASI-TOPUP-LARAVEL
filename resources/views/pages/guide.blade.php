@@ -33,7 +33,11 @@
                     <ul class="mt-4 grid gap-3 sm:grid-cols-2">
                         @foreach ($paymentMethods as $method)
                             <li class="flex items-center gap-3 rounded-lg border border-border p-3">
-                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-text-muted"><x-icon :name="$method->type === 'qris' ? 'squares' : ($method->type === 'ewallet' ? 'wallet' : 'card')" /></span>
+                                @if ($method->logoUrl())
+                                    <img src="{{ $method->logoUrl() }}" alt="" class="h-9 w-14 shrink-0 rounded-lg border border-border bg-white object-contain p-1">
+                                @else
+                                    <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 text-text-muted"><x-icon :name="$method->type === 'qris' ? 'squares' : ($method->type === 'ewallet' ? 'wallet' : 'card')" /></span>
+                                @endif
                                 <div>
                                     <p class="font-medium">{{ $method->name }}</p>
                                     <p class="text-xs text-text-muted">{{ $method->typeLabel() }}</p>
