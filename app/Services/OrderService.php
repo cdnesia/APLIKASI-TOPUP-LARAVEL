@@ -105,7 +105,8 @@ class OrderService
             'gateway_reference' => $invoice['reference'] ?? null,
             'pay_code' => ($invoice['vaNumber'] ?? '') ?: null,
             'qr_string' => ($invoice['qrString'] ?? '') ?: null,
-            'checkout_url' => $invoice['paymentUrl'] ?? null,
+            // Hanya URL https yang dipakai sebagai link bayar (cegah skema javascript: dsb.)
+            'checkout_url' => str_starts_with((string) ($invoice['paymentUrl'] ?? ''), 'https://') ? $invoice['paymentUrl'] : null,
         ]);
 
         return $order;
