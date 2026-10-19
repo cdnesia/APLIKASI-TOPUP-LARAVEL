@@ -207,6 +207,40 @@ class TopupFlowTest extends TestCase
         $this->post(route('login'), ['email' => 'owner@elhazmi.com', 'password' => 'gantibaru456'])->assertRedirect(route('admin.dashboard'));
     }
 
+    public function test_admin_can_upload_and_remove_logo_and_favicon(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->create();
+        $base = array_diff_key(Setting::DEFAULTS, array_flip(Setting::IMAGES));
+
+        $this->actingAs($admin)->put(route('admin.settings.update'), $base + [
+            'logo' => UploadedFile::fake()->image('logo.png', 400, 80),
+            'logo_dark' => UploadedFile::fake()->image('logo-putih.png', 400, 80),
+            'favicon' => UploadedFile::fake()->image('ikon.png', 512, 512),
+        ])->assertRedirect()->assertSessionHasNoErrors();
+
+        foreach (Setting::IMAGES as $key) {
+            $this->assertStringStartsWith('branding/', Setting::get($key));
+            Storage::disk('public')->assertExists(Setting::get($key));
+        }
+
+        $html = $this->get(route('home'))->assertOk()->getContent();
+        $this->assertStringContainsString(Setting::imageUrl('logo'), $html);
+        $this->assertStringContainsString(Setting::imageUrl('logo_dark'), $html); // footer
+        $this->assertStringContainsString('<link rel="icon" href="'.Setting::imageUrl('favicon').'"', $html);
+
+        // SVG ditolak karena bisa berisi skrip
+        $this->put(route('admin.settings.update'), $base + [
+            'logo' => UploadedFile::fake()->createWithContent('logo.svg', '<svg xmlns="http://www.w3.org/2000/svg"></svg>'),
+        ])->assertSessionHasErrors('logo');
+
+        $oldFavicon = Setting::get('favicon');
+        $this->put(route('admin.settings.update'), $base + ['remove_favicon' => '1'])->assertSessionHasNoErrors();
+        $this->assertSame('', Setting::get('favicon'));
+        Storage::disk('public')->assertMissing($oldFavicon);
+        $this->get(route('home'))->assertSee('favicon.svg');
+    }
+
     public function test_admin_pages_render_and_require_login(): void
     {
         $this->get(route('admin.dashboard'))->assertRedirect(route('login'));

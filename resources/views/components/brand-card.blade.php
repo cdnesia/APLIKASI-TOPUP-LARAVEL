@@ -12,7 +12,7 @@
             <x-icon :name="$brand->categoryIcon()" class="absolute -right-4 -bottom-4 h-24 w-24 text-primary/[0.07]" />
         @endif
         @if ($brand->is_popular)
-            <span class="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-white">Populer</span>
+            <span class="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-semibold text-ink">Populer</span>
         @endif
     </div>
     <div class="px-3 py-2.5">

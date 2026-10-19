@@ -1,6 +1,6 @@
 <x-layouts.admin title="Pengaturan">
     <div class="grid gap-6 lg:grid-cols-3">
-        <form action="{{ route('admin.settings.update') }}" method="POST" class="space-y-6 lg:col-span-2">
+        <form action="{{ route('admin.settings.update') }}" method="POST" enctype="multipart/form-data" class="space-y-6 lg:col-span-2">
             @csrf @method('PUT')
 
             <section class="card space-y-4 p-5 sm:p-6">
@@ -44,6 +44,40 @@
                     <label for="announcement" class="label">Pengumuman (tampil di atas website)</label>
                     <input id="announcement" name="announcement" value="{{ old('announcement', $settings['announcement']) }}" class="input" placeholder="Mis. Konfirmasi pembayaran pukul 08.00–22.00 WIB">
                 </div>
+            </section>
+
+            <section class="card space-y-5 p-5 sm:p-6">
+                <div>
+                    <h3>Logo & Favicon</h3>
+                    <p class="mt-1 text-xs text-text-muted">Kosongkan untuk memakai logo bawaan (huruf awal nama toko). Format PNG/JPG/WEBP, latar transparan disarankan.</p>
+                </div>
+
+                @foreach ([
+                    'logo' => ['Logo Utama', 'Tampil di header & halaman login (latar terang). Disarankan tinggi ±80px, lebar maks. 400px.', 'bg-bg', false],
+                    'logo_dark' => ['Logo Versi Gelap', 'Tampil di footer & sidebar admin (latar gelap). Pakai logo bertulisan putih. Kosong = memakai logo utama.', 'bg-ink', true],
+                    'favicon' => ['Favicon', 'Ikon kecil di tab browser. PNG persegi, disarankan 512×512px (atau ICO).', 'bg-bg', false],
+                ] as $key => [$label, $hint, $previewBg, $dark])
+                    <div class="grid gap-4 border-t border-border pt-5 sm:grid-cols-[180px_1fr] sm:items-start">
+                        <div class="flex h-24 items-center justify-center rounded-xl border border-border {{ $previewBg }} p-3">
+                            @if ($key === 'favicon')
+                                <img src="{{ \App\Models\Setting::imageUrl('favicon') ?? asset('favicon.svg') }}" alt="Pratinjau favicon" class="h-12 w-12 object-contain">
+                            @else
+                                <x-logo :dark="$dark" />
+                            @endif
+                        </div>
+                        <div>
+                            <label for="{{ $key }}" class="label">{{ $label }}</label>
+                            <input id="{{ $key }}" name="{{ $key }}" type="file" accept="{{ $key === 'favicon' ? '.png,.ico' : '.png,.jpg,.jpeg,.webp' }}"
+                                class="input file:mr-3 file:rounded-md file:border-0 file:bg-primary-light file:px-3 file:py-1 file:text-xs file:font-semibold file:text-primary @error($key) input-error @enderror">
+                            @error($key) <p class="field-error">{{ $message }}</p> @else <p class="hint">{{ $hint }}</p> @enderror
+                            @if ($settings[$key])
+                                <label class="mt-2 inline-flex items-center gap-2 text-xs text-danger">
+                                    <input type="checkbox" name="remove_{{ $key }}" value="1" class="rounded border-border-dark"> Hapus & kembali ke bawaan
+                                </label>
+                            @endif
+                        </div>
+                    </div>
+                @endforeach
             </section>
 
             <section class="card space-y-4 p-5 sm:p-6">

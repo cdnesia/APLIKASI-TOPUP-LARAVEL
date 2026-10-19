@@ -29,9 +29,9 @@
                 <div class="pointer-events-none absolute -top-32 -right-20 h-80 w-80 rounded-full bg-primary/40 blur-[110px]"></div>
                 <div class="relative max-w-xl">
                     <p class="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Diproses otomatis setelah pembayaran</p>
-                    <h1 class="mt-4 text-3xl leading-tight sm:text-4xl">Top up favoritmu, <span class="text-slate-400">tanpa ribet.</span></h1>
+                    <h1 class="mt-4 text-3xl leading-tight sm:text-4xl">Top up favoritmu, <span class="text-accent">tanpa ribet.</span></h1>
                     <p class="mt-3 text-slate-400">Diamond, pulsa, paket data, token listrik, dan saldo e-wallet. Cukup masukkan ID, bayar, selesai.</p>
-                    <a href="#produk" class="btn mt-6 bg-white text-ink hover:bg-slate-100">Mulai Top Up</a>
+                    <a href="#produk" class="btn-accent mt-6">Mulai Top Up <span aria-hidden="true">→</span></a>
                 </div>
             </section>
         @endif
@@ -41,7 +41,7 @@
             <section class="mt-10 rounded-3xl border border-accent/30 bg-surface p-4 sm:p-6" aria-labelledby="flash-title">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-3">
-                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-white"><x-icon name="bolt" class="h-5 w-5" /></span>
+                        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-accent text-ink"><x-icon name="bolt" class="h-5 w-5" /></span>
                         <div>
                             <h2 id="flash-title" class="text-lg sm:text-xl">Flash Sale</h2>
                             <p class="text-xs text-text-muted">Harga spesial, stok terbatas.</p>
@@ -82,7 +82,7 @@
         @if ($trending->isNotEmpty())
             <section class="mt-10">
                 <div class="flex items-center gap-2">
-                    <x-icon name="trend" class="h-5 w-5 text-accent" />
+                    <x-icon name="trend" class="h-5 w-5 text-accent-dark" />
                     <h2 class="text-lg sm:text-xl">Trending</h2>
                 </div>
                 <p class="mt-1 text-text-muted">Produk yang paling sering dibeli saat ini.</p>

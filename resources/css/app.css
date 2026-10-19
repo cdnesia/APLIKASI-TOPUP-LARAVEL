@@ -7,27 +7,27 @@
 /* Mode gelap berbasis kelas .dark pada <html> (diatur tombol tema) */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Token warna — tersedia sebagai variabel CSS (--color-*) dan kelas Tailwind (bg-primary, dst.) */
+/* Palet: biru dongker (dasar) + royal blue (utama) + emas (aksen CTA, teks di atasnya wajib dongker). Token warna — tersedia sebagai variabel CSS (--color-*) dan kelas Tailwind (bg-primary, dst.) */
 @theme {
     --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
 
-    --color-primary: #4f46e5;
-    --color-primary-dark: #4338ca;
-    --color-primary-light: #eef0ff;
-    --color-accent: #f97316;
-    --color-accent-dark: #ea580c;
-    --color-accent-light: #fff4ea;
+    --color-primary: #1e3a8a;
+    --color-primary-dark: #172f6e;
+    --color-primary-light: #e7ecf8;
+    --color-accent: #f5b301;
+    --color-accent-dark: #b45309;
+    --color-accent-light: #fff6d6;
 
-    --color-bg: #f7f8fb;
+    --color-bg: #f5f7fb;
     --color-surface: #ffffff;
-    --color-border: #eceef3;
-    --color-border-dark: #d8dce5;
+    --color-border: #e5e9f2;
+    --color-border-dark: #d2d9e6;
 
     --color-text: #0f172a;
-    --color-text-muted: #667085;
+    --color-text-muted: #64708a;
 
     /* Latar gelap untuk hero & sidebar admin */
-    --color-ink: #0b1020;
+    --color-ink: #0b1b3f;
 
     --color-success: #16a34a;
     --color-warning: #d97706;
@@ -35,27 +35,27 @@
     --color-info: #2563eb;
 
     --shadow-soft: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px -8px rgb(15 23 42 / 0.08);
-    --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.04), 0 12px 32px -12px rgb(79 70 229 / 0.25);
+    --shadow-lift: 0 2px 4px rgb(15 23 42 / 0.04), 0 12px 32px -12px rgb(30 58 138 / 0.25);
 }
 
 /* Token mode gelap — komponen yang memakai token otomatis ikut berganti */
 .dark {
     color-scheme: dark;
-    --color-primary: #6d6af8;
-    --color-primary-dark: #5b57f0;
-    --color-primary-light: #1c1d3f;
-    --color-accent: #fb8a3c;
-    --color-accent-dark: #fb923c;
-    --color-accent-light: #2b1b10;
+    --color-primary: #2f6fe0;
+    --color-primary-dark: #2559c4;
+    --color-primary-light: #0f1f45;
+    --color-accent: #fbbf24;
+    --color-accent-dark: #fcd34d;
+    --color-accent-light: #2a2208;
 
-    --color-bg: #0a0d16;
-    --color-surface: #121624;
-    --color-border: #1f2536;
-    --color-border-dark: #2c3448;
+    --color-bg: #060b18;
+    --color-surface: #0c1428;
+    --color-border: #1a2540;
+    --color-border-dark: #263356;
 
     --color-text: #e7e9f0;
-    --color-text-muted: #8e96aa;
-    --color-ink: #10142a;
+    --color-text-muted: #8b96b0;
+    --color-ink: #0b1636;
 
     --shadow-soft: 0 1px 2px rgb(0 0 0 / 0.3);
     --shadow-lift: 0 12px 32px -12px rgb(0 0 0 / 0.6);
@@ -104,7 +104,7 @@
         @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition duration-200 focus-visible:ring-4 focus-visible:ring-primary/20 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50;
     }
     .btn-primary { @apply bg-primary text-white shadow-sm shadow-primary/20 hover:bg-primary-dark; }
-    .btn-accent { @apply bg-accent text-white shadow-sm shadow-accent/20 hover:bg-accent-dark; }
+    .btn-accent { @apply bg-accent text-ink shadow-sm shadow-accent/30 hover:brightness-95; }
     .btn-secondary { @apply border border-primary/30 bg-surface text-primary hover:border-primary hover:bg-primary/5; }
     .btn-danger { @apply bg-danger text-white hover:bg-red-700; }
     .btn-ghost { @apply text-text-muted hover:bg-text/5 hover:text-text; }

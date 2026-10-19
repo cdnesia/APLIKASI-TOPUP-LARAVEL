@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Setting;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class SettingController extends Controller
@@ -33,10 +34,34 @@ class SettingController extends Controller
             'margin_flat' => ['required', 'integer', 'min:0'],
             'price_rounding' => ['required', 'integer', 'min:1'],
             'order_expiry_hours' => ['required', 'integer', 'min:1', 'max:72'],
+            // SVG sengaja tidak diizinkan: file SVG bisa berisi skrip
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
+            'logo_dark' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:1024'],
+            'favicon' => ['nullable', 'file', 'mimes:png,ico', 'max:512'],
         ], [
+            'logo.mimes' => 'Logo harus berformat PNG, JPG, atau WEBP.',
+            'logo_dark.mimes' => 'Logo harus berformat PNG, JPG, atau WEBP.',
+            'favicon.mimes' => 'Favicon harus berformat PNG atau ICO.',
             'whatsapp_admin.regex' => 'Gunakan format 62xxx, contoh: 6281234567890',
             'instagram.regex' => 'Isi username saja tanpa @, contoh: elhazmi.store',
         ]);
+
+        foreach (Setting::IMAGES as $key) {
+            unset($data[$key]);
+            $old = Setting::get($key);
+
+            if ($request->hasFile($key)) {
+                $data[$key] = $request->file($key)->store('branding', 'public');
+            } elseif ($request->boolean("remove_{$key}")) {
+                $data[$key] = '';
+            } else {
+                continue;
+            }
+
+            if ($old) {
+                Storage::disk('public')->delete($old);
+            }
+        }
 
         Setting::put($data);
 

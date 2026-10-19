@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 
 #[Fillable(['key', 'value'])]
 class Setting extends Model
@@ -29,7 +30,22 @@ class Setting extends Model
         'margin_flat' => '0',
         'price_rounding' => '100',
         'order_expiry_hours' => '3',
+        // Path file di disk public; kosong = pakai logo/favicon bawaan
+        'logo' => '',
+        'logo_dark' => '',
+        'favicon' => '',
     ];
+
+    /** Pengaturan berupa file gambar yang diunggah dari admin */
+    public const IMAGES = ['logo', 'logo_dark', 'favicon'];
+
+    /** URL publik gambar pengaturan, atau null bila belum diunggah */
+    public static function imageUrl(string $key): ?string
+    {
+        $path = static::get($key);
+
+        return $path ? Storage::disk('public')->url($path) : null;
+    }
 
     public static function get(string $key, mixed $default = null): mixed
     {

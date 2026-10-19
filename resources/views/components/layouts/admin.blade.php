@@ -65,7 +65,7 @@
                                         <x-icon :name="$icon" :class="'h-5 w-5 shrink-0 '.($active ? 'text-primary-light' : 'text-slate-500')" />
                                         <span class="flex-1">{{ $label }}</span>
                                         @if ($badge)
-                                            <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-white">{{ $badge }}</span>
+                                            <span class="rounded-full bg-accent px-2 py-0.5 text-[11px] font-semibold text-ink">{{ $badge }}</span>
                                         @endif
                                     </a>
                                 </li>

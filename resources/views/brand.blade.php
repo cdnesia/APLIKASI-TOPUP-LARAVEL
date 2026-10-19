@@ -31,7 +31,7 @@
             </div>
         </div>
         <div class="mx-auto mt-4 flex max-w-6xl flex-wrap gap-x-5 gap-y-2 px-4 text-xs text-text-muted">
-            <span class="inline-flex items-center gap-1.5"><x-icon name="bolt" class="h-4 w-4 text-accent" /> Proses otomatis</span>
+            <span class="inline-flex items-center gap-1.5"><x-icon name="bolt" class="h-4 w-4 text-accent-dark" /> Proses otomatis</span>
             <span class="inline-flex items-center gap-1.5"><x-icon name="shield" class="h-4 w-4 text-success" /> Cukup ID, tanpa password</span>
             <span class="inline-flex items-center gap-1.5"><x-icon name="refresh" class="h-4 w-4 text-primary" /> Gagal? Dana kembali</span>
         </div>
@@ -81,7 +81,7 @@
                         <div @class(['rounded-2xl border border-accent/40 bg-accent-light/40 p-4' => $isFlash])>
                             @if ($groups->count() > 1 || $isFlash)
                                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
-                                    @if ($isFlash) <x-icon name="bolt" class="h-4 w-4 text-accent" /> @endif
+                                    @if ($isFlash) <x-icon name="bolt" class="h-4 w-4 text-accent-dark" /> @endif
                                     {{ $group }}
                                 </h3>
                             @endif
